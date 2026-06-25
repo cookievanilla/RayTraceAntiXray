@@ -40,7 +40,30 @@ public final class WorldListener implements Listener {
             int maxRayTraceBlockCountPerChunk = Math.max(config.getInt("world-settings." + worldName + ".anti-xray.max-ray-trace-block-count-per-chunk", config.getInt("world-settings.default.anti-xray.max-ray-trace-block-count-per-chunk")), 0);
             List<String> rayTraceBlocks = config.getList("world-settings." + worldName + ".anti-xray.ray-trace-blocks", config.getList("world-settings.default.anti-xray.ray-trace-blocks")).stream().filter(Objects::nonNull).map(String::valueOf).collect(Collectors.toList());
             ServerLevel serverLevel = ((CraftWorld) world).getHandle();
-            ChunkPacketBlockControllerAntiXray controller = new ChunkPacketBlockControllerAntiXray(plugin, rayTraceThirdPerson, rayTraceDistance, rehideBlocks, rehideDistance, maxRayTraceBlockCountPerChunk, rayTraceBlocks.isEmpty() ? null : rayTraceBlocks, serverLevel, MinecraftServer.getServer().executor);
+            java.util.concurrent.Executor executor = null;
+            try {
+                Field executorField = MinecraftServer.class.getDeclaredField("executor");
+                executorField.setAccessible(true);
+                executor = (java.util.concurrent.Executor) executorField.get(MinecraftServer.getServer());
+            } catch (NoSuchFieldException e) {
+                for (Field field : MinecraftServer.class.getDeclaredFields()) {
+                    if (field.getType() == java.util.concurrent.Executor.class) {
+                        try {
+                            field.setAccessible(true);
+                            executor = (java.util.concurrent.Executor) field.get(MinecraftServer.getServer());
+                            break;
+                        } catch (IllegalAccessException ex) {
+                            // ignore
+                        }
+                    }
+                }
+            } catch (IllegalAccessException e) {
+                // ignore
+            }
+            if (executor == null) {
+                executor = MinecraftServer.getServer();
+            }
+            ChunkPacketBlockControllerAntiXray controller = new ChunkPacketBlockControllerAntiXray(plugin, rayTraceThirdPerson, rayTraceDistance, rehideBlocks, rehideDistance, maxRayTraceBlockCountPerChunk, rayTraceBlocks.isEmpty() ? null : rayTraceBlocks, serverLevel, executor);
 
             try {
                 Field field = Level.class.getDeclaredField("chunkPacketBlockController");

@@ -7,8 +7,8 @@
   <name>Libs</name>
   <description>Libs.</description>
   <properties>
-    <minecraftVersion>1.21.11</minecraftVersion>
-    <paperVersion>${minecraftVersion}-R0.1-SNAPSHOT</paperVersion>
+    <minecraftVersion>26.2</minecraftVersion>
+    <paperVersion>26.2.build.31-alpha</paperVersion>
   </properties>
   <repositories>
     <repository>
@@ -56,7 +56,7 @@
               <goal>exec</goal>
             </goals>
             <configuration>
-              <executable>java</executable>
+              <executable>${java.home}/bin/java</executable>
               <arguments>
                 <argument>-Dpaperclip.patchonly=true</argument>
                 <argument>-jar</argument>
